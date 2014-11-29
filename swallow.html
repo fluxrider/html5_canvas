@@ -1,0 +1,105 @@
+<html>
+<head>
+<title>Swallow</title>
+<script type="text/javascript" src="canvas_app.js"></script>
+<script type="text/javascript" src="canvas_input.js"></script>
+<script>
+// ===== App Code Begins Here =====
+
+// variables
+var open;
+var close;
+var good;
+var bad;
+var projectile;
+var projectileX;
+var projectileY;
+var mouthX;
+var speed;
+var score;
+var gameOverMessage;
+
+// init
+function appInit() {
+	backgroundColor = "white";
+	defaultTextFillColor = "white";
+	defaultTextStrokeColor = "black";
+	open = loadImage("res/open.png");
+	close = loadImage("res/close.png");
+	good = loadImage("res/good.png");
+	bad = loadImage("res/bad.png");
+	mouthX = 70;
+	speed = 2;
+	score = 0;
+	gameOverMessage = null;
+	loadSound("res/test.mp3");
+}
+
+// tick
+function appTick(g, time) {
+	g.setFont(10, "Arial");
+	var mouthIsOpen = input.held(UP) || input.held(POINTER);
+
+	// draw mouth opened/closed
+	if(mouthIsOpen) {
+		g.drawImage(open, 0, 0);
+	} else {
+		g.drawImage(close, 0, 0);
+	}
+
+	// generate a new projectile
+	if(projectile == null) {
+		if(Math.random() < .5) {
+			projectile = good;
+		} else {
+			projectile = bad;
+		}
+		projectileX = canvas.width;
+		projectileY = canvas.height / 2 - projectile.height / 2;
+	}
+
+	// draw incoming projectile
+	g.drawImage(projectile, projectileX, projectileY);
+
+	// draw score
+	var scoreText = "Score: " + score;
+	g.drawText(scoreText, canvas.width - g.measureText(scoreText).width, 0);
+
+	// draw game over message
+	if(gameOverMessage) {
+		g.drawText(gameOverMessage, 0, g.fontLineHeight);
+	}
+	// or continue game play	
+	else {
+		// move projectile
+		projectileX -= speed;
+		if(projectileX < mouthX) {
+			// test if we ate the correct thing
+			if((projectile == good && mouthIsOpen) || (projectile == bad && !mouthIsOpen)) {
+				projectile = null;
+				speed += .3;
+				score++;
+			}
+			// if not, it's game over
+			else {
+				if(projectile == bad) {
+					gameOverMessage = "Why would you eat that?!?";
+				} else {
+					gameOverMessage = "You need to eat all your vegetables!";
+				}
+				var sound = getSound("res/test.mp3");
+				sound.play();
+			}
+		}
+	}
+}
+
+// ===== App Code Ends Here =====
+</script>
+</head>
+<body onload="beginMainLoop();" style="margin:0; padding:0">
+<div id='appCanvasDiv' style="position:absolute; top:0px; left:0px;"> 
+<canvas id="appCanvas" width="240" height="150" style="border:1px solid black;">Error: Your browser doesn't support canvas.</canvas>
+</div>
+</body>
+</html>
