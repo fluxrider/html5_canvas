@@ -6,89 +6,118 @@
 <script>
 // ===== App Code Begins Here =====
 
-// variables
-var open;
-var close;
-var good;
-var bad;
+// persistent variables (images and sound)
+var mouthOpened;
+var mouthClosed;
+var goodFood;
+var badFood;
+var gameOverSound;
+
+// persistent variables (constants)
+var MOUTH_X_POSITION;
+
+// persistent variables (gameplay)
 var projectile;
 var projectileX;
 var projectileY;
-var mouthX;
 var speed;
 var score;
+
+// persistent variables (ui)
 var gameOverMessage;
 
 // init
 function appInit() {
+	// load images
+	mouthOpened = loadImage("res/open.png");
+	mouthClosed = loadImage("res/close.png");
+	goodFood = loadImage("res/good.png");
+	badFood = loadImage("res/bad.png");
+	// load sounds
+	gameOverSound = loadSound("res/test.mp3");
+	// initialize constants
+	MOUTH_X_POSITION = 70;
+	// initialize gameplay variables
+	speed = 2;
+	score = 0;
+	// initialize ui
+	gameOverMessage = null;
+	// initialize ui (framework)
 	backgroundColor = "white";
 	defaultTextFillColor = "white";
 	defaultTextStrokeColor = "black";
-	open = loadImage("res/open.png");
-	close = loadImage("res/close.png");
-	good = loadImage("res/good.png");
-	bad = loadImage("res/bad.png");
-	mouthX = 70;
-	speed = 2;
-	score = 0;
-	gameOverMessage = null;
-	loadSound("res/test.mp3");
 }
 
 // tick
 function appTick(g, time) {
+	// use a smaller font than the default
 	g.setFont(10, "Arial");
+
+	// read input
 	var mouthIsOpen = input.held(UP) || input.held(POINTER);
+
+	// get game state
+	var gameIsOver = gameOverMessage != null;
 
 	// draw mouth opened/closed
 	if(mouthIsOpen) {
-		g.drawImage(open, 0, 0);
+		g.drawImage(mouthOpened, 0, 0);
 	} else {
-		g.drawImage(close, 0, 0);
+		g.drawImage(mouthClosed, 0, 0);
 	}
 
-	// generate a new projectile
+	// generate a new projectile if there isn't one already
 	if(projectile == null) {
+		// randomly select a 'good' or 'bad' food item
 		if(Math.random() < .5) {
-			projectile = good;
+			projectile = goodFood;
 		} else {
-			projectile = bad;
+			projectile = badFood;
 		}
+		// initialize the position of the projectile at the rightmost position of the screen
 		projectileX = canvas.width;
-		projectileY = canvas.height / 2 - projectile.height / 2;
+		// centered vertically
+		projectileY = (canvas.height - projectile.height) / 2;
 	}
 
 	// draw incoming projectile
 	g.drawImage(projectile, projectileX, projectileY);
 
-	// draw score
+	// draw score in top right corner
 	var scoreText = "Score: " + score;
-	g.drawText(scoreText, canvas.width - g.measureText(scoreText).width, 0);
+	var scoreTextX = canvas.width - g.measureText(scoreText).width;
+	var scoreTextY = 0;
+	g.drawText(scoreText, scoreTextX, scoreTextY);
 
-	// draw game over message
-	if(gameOverMessage) {
+	// if the game is over, draw game over message
+	if(gameIsOver) {
 		g.drawText(gameOverMessage, 0, g.fontLineHeight);
 	}
 	// or continue game play	
 	else {
-		// move projectile
+		// move projectile towards the left of the screen
 		projectileX -= speed;
-		if(projectileX < mouthX) {
-			// test if we ate the correct thing
-			if((projectile == good && mouthIsOpen) || (projectile == bad && !mouthIsOpen)) {
+		// test if we are past the mouth
+		if(projectileX < MOUTH_X_POSITION) {
+			// test if we ate something good, or avoided eating something bad
+			if((projectile == goodFood && mouthIsOpen) || (projectile == badFood && !mouthIsOpen)) {
+				// in that case, make the food disapear
 				projectile = null;
+				// increase the difficulty
 				speed += .3;
+				// increase the score
 				score++;
 			}
-			// if not, it's game over
+			// if we swallowed something bad, or didn't eat something good, then it's game over
 			else {
-				if(projectile == bad) {
+				// show adequate message
+				if(projectile == badFood) {
 					gameOverMessage = "Why would you eat that?!?";
 				} else {
 					gameOverMessage = "You need to eat all your vegetables!";
 				}
-				var sound = getSound("res/test.mp3");
-				sound.play();
+				// play silly sound
+				gameOverSound.play();
 			}
 		}
 	}
