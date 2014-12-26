@@ -167,6 +167,8 @@ function loadingTick(g, time) {
 			canvas_app_allLoaded = false;
 			g.drawText(filename, 0, y);
 			y += 30;
+		} else {
+			if(canvas_app_images[filename].width == 0) throw "failed to load: " + filename; 
 		}
 	}
 	// Note: we don't bother with waiting for sound, rumours are there is no preload happening, and the 'canplaythrough' event is fake.
