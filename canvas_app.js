@@ -1,16 +1,21 @@
-// globals
-var t0;
-var canvas;
-var backgroundColor;
-var input;
-var currentWindowInnerWidth;
-var currentWindowInnerHeight;
-var canvasScale;
-var images;
-var sounds;
-var allLoaded;
+// exposed globals
 var defaultTextFillColor;
 var defaultTextStrokeColor;
+var backgroundColor;
+var input;
+var totalLoadTime;
+var canvas;
+
+// hidden globals
+var canvas_app_t0;
+var canvas_app_appt0;
+var canvas_app_currentWindowInnerWidth;
+var canvas_app_currentWindowInnerHeight;
+var canvas_app_canvasScale;
+var canvas_app_images;
+var canvas_app_sounds;
+var canvas_app_allLoaded;
+var canvas_app_caughtException;
 
 // utils: time
 function currentTimeMillis() {
@@ -65,9 +70,9 @@ function scaleCanvas() {
 	var W = window.innerWidth;
 	var H = window.innerHeight;
 	// don't update canvas size if we didn't change window size
-	if(W == currentWindowInnerWidth || H == currentWindowInnerHeight) return;
-	currentWindowInnerWidth = W;
-	currentWindowInnerHeight = H;
+	if(W == canvas_app_currentWindowInnerWidth || H == canvas_app_currentWindowInnerHeight) return;
+	canvas_app_currentWindowInnerWidth = W;
+	canvas_app_currentWindowInnerHeight = H;
 	// calculate new size
 	var width = W - border - border;
 	var height = H - border - border;
@@ -100,8 +105,8 @@ function touchStart(e) {
 	var rect = canvas.getBoundingClientRect();
 	for(var  i = 0; i < e.changedTouches.length; i++) {
 		var touch = e.changedTouches[i];
-		input._touchX = Math.round((touch.clientX - rect.left) / canvasScale);
-		input._touchY = Math.round((touch.clientY - rect.top) / canvasScale);
+		input._touchX = Math.round((touch.clientX - rect.left) / canvas_app_canvasScale);
+		input._touchY = Math.round((touch.clientY - rect.top) / canvas_app_canvasScale);
 		input.setKey(VK_TOUCH, true);
 	}
 }
@@ -109,21 +114,21 @@ function touchEnd(e) {
 	var rect = canvas.getBoundingClientRect();
 	for(var  i = 0; i < e.changedTouches.length; i++) {
 		var touch = e.changedTouches[i];
-		input._touchX = Math.round((touch.clientX - rect.left) / canvasScale);
-		input._touchY = Math.round((touch.clientY - rect.top) / canvasScale);
+		input._touchX = Math.round((touch.clientX - rect.left) / canvas_app_canvasScale);
+		input._touchY = Math.round((touch.clientY - rect.top) / canvas_app_canvasScale);
 		input.setKey(VK_TOUCH, false);
 	}
 }
 function mouseDown(e) {
 	var rect = canvas.getBoundingClientRect();
-	input._mouseX = Math.round((e.clientX - rect.left) / canvasScale);
-	input._mouseY = Math.round((e.clientY - rect.top) / canvasScale);
+	input._mouseX = Math.round((e.clientX - rect.left) / canvas_app_canvasScale);
+	input._mouseY = Math.round((e.clientY - rect.top) / canvas_app_canvasScale);
 	input.setKey(VK_MOUSE, true);
 }
 function mouseUp(e) {
 	var rect = canvas.getBoundingClientRect();
-	input._mouseX = Math.round((e.clientX - rect.left) / canvasScale);
-	input._mouseY = Math.round((e.clientY - rect.top) / canvasScale);
+	input._mouseX = Math.round((e.clientX - rect.left) / canvas_app_canvasScale);
+	input._mouseY = Math.round((e.clientY - rect.top) / canvas_app_canvasScale);
 	input.setKey(VK_MOUSE, false);
 }
 
@@ -131,35 +136,35 @@ function mouseUp(e) {
 function loadImage(filename) {
 	var image = document.createElement('img');
 	image.src = filename;
-	images[filename] = image;
+	canvas_app_images[filename] = image;
 	return image;
 }
 
 function getImage(filename) {
-	if(!images[filename]) throw "Image " + filename + " hasn't been loaded";
-	return images[filename];
+	if(!canvas_app_images[filename]) throw "Image " + filename + " hasn't been loaded";
+	return canvas_app_images[filename];
 }
 
 function loadSound(filename) {
 	var sound = new Audio(filename);
-	sounds[filename] = sound;
+	canvas_app_sounds[filename] = sound;
 	return sound;
 }
 
 function getSound(filename) {
-	if(!sounds[filename]) throw "Sound " + filename + " hasn't been loaded";
-	return sounds[filename];
+	if(!canvas_app_sounds[filename]) throw "Sound " + filename + " hasn't been loaded";
+	return canvas_app_sounds[filename];
 }
 
 
 function loadingTick(g, time) {
 	g.drawText("Loading..." + time, 0, 0);
-	allLoaded = true;
+	canvas_app_allLoaded = true;
 	var textHeight = 30;
 	var y = textHeight;
-	for (filename in images) {
-		if(!images[filename].complete) {
-			allLoaded = false;
+	for (filename in canvas_app_images) {
+		if(!canvas_app_images[filename].complete) {
+			canvas_app_allLoaded = false;
 			g.drawText(filename, 0, y);
 			y += 30;
 		}
@@ -169,17 +174,17 @@ function loadingTick(g, time) {
 
 // main init
 function beginMainLoop() {
-	t0 = currentTimeMillis();
+	canvas_app_t0 = currentTimeMillis();
 	canvas = document.getElementById("appCanvas");
 	backgroundColor = "white";
-	currentWindowInnerWidth = -1;
-	currentWindowInnerHeight = -1;
-	canvasScale = 1;
+	canvas_app_currentWindowInnerWidth = -1;
+	canvas_app_currentWindowInnerHeight = -1;
+	canvas_app_canvasScale = 1;
 	defaultTextFillColor = "white"
 	defaultTextStrokeColor = "black";
-	images = new Array();
-	sounds = new Array();
-	allLoaded = false;
+	canvas_app_images = new Array();
+	canvas_app_sounds = new Array();
+	canvas_app_allLoaded = false;
 
 	// input
 	input = new PolledInput();
@@ -213,12 +218,16 @@ function mainLoop() {
 	clearScreen(g);
 	// tick
 	try {
-		if(allLoaded) {
-			appTick(g, time - t0);
+		if(canvas_app_caughtException) throw canvas_app_caughtException;
+		if(canvas_app_allLoaded) {
+			appTick(g, time - canvas_app_appt0);
 		} else {
-			loadingTick(g, time - t0);
+			loadingTick(g, time - canvas_app_t0);
+			canvas_app_appt0 = currentTimeMillis();
+			totalLoadTime = canvas_app_appt0 - canvas_app_t0;
 		}
 	} catch(e) {
+		canvas_app_caughtException = e;
 		clearScreen(g);
 		g.setFont(12, "Arial");
 		g.fillText("Error: " + e, 10, 50);

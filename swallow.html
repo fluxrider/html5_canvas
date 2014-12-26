@@ -6,26 +6,6 @@
 <script>
 // ===== App Code Begins Here =====
 
-// persistent variables (images and sound)
-var mouthOpened;
-var mouthClosed;
-var goodFood;
-var badFood;
-var gameOverSound;
-
-// persistent variables (constants)
-var MOUTH_X_POSITION;
-
-// persistent variables (gameplay)
-var projectile;
-var projectileX;
-var projectileY;
-var speed;
-var score;
-
-// persistent variables (ui)
-var gameOverMessage;
-
 // init
 function appInit() {
 	// load images
@@ -34,7 +14,7 @@ function appInit() {
 	goodFood = loadImage("res/good.png");
 	badFood = loadImage("res/bad.png");
 	// load sounds
-	gameOverSound = loadSound("res/test.mp3");
+	gameOverSound = loadSound("test.mp3");
 	// initialize constants
 	MOUTH_X_POSITION = 70;
 	// initialize gameplay variables
@@ -46,6 +26,8 @@ function appInit() {
 	backgroundColor = "white";
 	defaultTextFillColor = "white";
 	defaultTextStrokeColor = "black";
+
+	projectile = null;
 }
 
 // tick

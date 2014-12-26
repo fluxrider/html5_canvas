@@ -1,0 +1,23 @@
+== Important concepts to teach ==
+coordinate system is (0, 0) in top left, and (W, H) in bottom right
+position of images are relative to their top left
+boolean: true / false
+
+== General Computer ==
+test often
+backup often
+never delete while debugging without a backup
+
+== Game Ideas ==
+character generator and name generator
+[face, eyes, mouth, hair, nose, ears]
+
+bvsb style battle
+[3 buttons, 2 seconds timeout, fires (and double ko draw if other player fires in time!)]
+
+procedural graphics
+[that could be a simpler way to teach loops]
+
+Dungeons and Dragon dice rolls
+
+more advance gameplay of carrot game or reskins (2 player, throwing things at each other)

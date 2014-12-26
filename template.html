@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>Web page title</title>
+<title>Web Page Title</title>
 <script type="text/javascript" src="canvas_app.js"></script>
 <script type="text/javascript" src="canvas_input.js"></script>
 <script>
@@ -8,24 +8,31 @@
 
 // init
 function appInit() {
+	// default settings
 	backgroundColor = "white";
 	defaultTextFillColor = "white"
 	defaultTextStrokeColor = "black";
-	loadImage("res/test.png");
-	loadSound("res/test.mp3");
+	// pre-load resources
+	testImage = loadImage("test.png");
+	testSound = loadSound("test.mp3");
 }
 
 // tick
 function appTick(g, time) {
-	var test = getImage("res/test.png");
-	var sound = getSound("res/test.mp3");
-	var y = 0;
-	g.drawImage(test, 0, 0);
-	g.drawText("Time: " + time, 0, y); y += g.fontLineHeight;
-	g.drawText("LEFT KEY " + input.held(LEFT), 0, y); y += g.fontLineHeight;
-	g.drawText("POINTER " + input.held(POINTER) + " " + input.pointerX + " " + input.pointerY, 0, y); y += g.fontLineHeight;
+	// draw image
+	g.drawImage(testImage, 0, 0);
 
-	if(input.typed(LEFT)) sound.play();
+	// draw time and input states
+	textY = 0;
+	g.drawText("Time: " + time + " Load time was: " + totalLoadTime, 0, textY);
+	textY += g.fontLineHeight;
+	g.drawText("LEFT KEY " + input.held(LEFT), 0, textY);
+	textY += g.fontLineHeight;
+	g.drawText("POINTER " + input.held(POINTER) + " " + input.pointerX + " " + input.pointerY, 0, textY);
+	textY += g.fontLineHeight;
+
+	// play sound on input
+	if(input.typed(LEFT)) testSound.play();
 }
 
 // ===== App Code Ends Here =====
